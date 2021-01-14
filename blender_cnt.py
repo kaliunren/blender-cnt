@@ -248,7 +248,7 @@ class BlenderCNTDialog(bpy.types.Operator):
                                   default='CNT')
     wrap: bpy.props.FloatProperty(name="Wrap factor", default=0, min=0, max=1)
     index_m: bpy.props.IntProperty(name="m", default=5, min=1)
-    index_n: bpy.props.IntProperty(name="n", default=5, min=1)
+    index_n: bpy.props.IntProperty(name="n", default=5, min=0)
     count_x: bpy.props.IntProperty(name="Nx", default=1, min=1)
     count_y: bpy.props.IntProperty(name="Ny", default=1, min=1)
     bL: bpy.props.FloatProperty(name="C-C Bond Length",
@@ -345,6 +345,14 @@ class BlenderCNTDialog(bpy.types.Operator):
                 name = 'Array.' + str(i)
                 bpy.ops.object.modifier_add(type='ARRAY')
                 bpy.context.active_object.modifiers['Array'].name = name
+                #inital the array modifier
+                bpy.context.active_object.modifiers[
+                    name].constant_offset_displace[0] = 0
+                bpy.context.active_object.modifiers[
+                    name].constant_offset_displace[1] = 0
+                bpy.context.active_object.modifiers[
+                    name].constant_offset_displace[2] = 0
+
                 bpy.context.active_object.modifiers[name].count = count[i]
                 bpy.context.active_object.modifiers[
                     name].use_relative_offset = False
