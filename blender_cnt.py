@@ -26,7 +26,7 @@ derivative work, you must accompany this image with the following acknowledgment
 '''
 
 import numpy as np
-from fractions import gcd
+from math import gcd
 from math import cos, sin, acos, atan2, sqrt, copysign, pi
 
 
@@ -47,8 +47,7 @@ class Lattice:
         returns the 2D point for the lattice given indices i, j
         if k is supplied, returns the atom position at i, j.
         '''
-        return (i * self.a1) + (j *
-                                self.a2) + (0 if k == None else self.xList[k])
+        return (i * self.a1) + (j * self.a2) + (0 if k == None else self.xList[k])
 
 
 class LatticeCell:
@@ -67,10 +66,7 @@ class LatticeCell:
         self.magT = mag(self.t)
         # Chiral rotation matrix (rotate a1 along x-axis)
         self.theta = acos(norm(self.c)[0] * copysign(1, self.c[1]))
-        self.rotM = np.array([[cos(self.theta),
-                               sin(self.theta)],
-                              [-sin(self.theta),
-                               cos(self.theta)]]).T
+        self.rotM = np.array([[cos(self.theta), sin(self.theta)], [-sin(self.theta), cos(self.theta)]]).T
 
         # Calculate atoms and bonds in unit cell
         self._boundsErr = mag(lattice.pos(0, 0, 0) - lattice.pos(0, 0, 1))
@@ -92,17 +88,14 @@ class LatticeCell:
         imax = 2 * (n + m)
         jmin = -(2 * m + n)
         jmax = n
-        return [[i, j, k] for i in range(imin, imax + 1)
-                for j in range(jmin, jmax + 1) for k in range(2)
+        return [[i, j, k] for i in range(imin, imax + 1) for j in range(jmin, jmax + 1) for k in range(2)
                 if self._isPosInCell(self.pos(i, j, k))]
 
     def _isPosInCell(self, p):
         ''' 
         returns true if p is in the unit cell bounds (plus/minus some error) 
         '''
-        return (p[0] >= 0 - self._boundsErr / 5
-                and p[0] <= self.magC - self._boundsErr / 5
-                and p[1] >= 0 + self._boundsErr / 10
+        return (p[0] >= 0 - self._boundsErr / 5 and p[0] <= self.magC - self._boundsErr / 5 and p[1] >= 0 + self._boundsErr / 10
                 and p[1] <= self.magT + self._boundsErr / 10)
 
     def _calcAtoms(self, indices):
@@ -131,9 +124,7 @@ class LatticeCell:
 
     def _isBondInCell(self, p):
         ''' returns true if p is in the unit cell bounds (plus/minus some error) '''
-        return (p[0] >= 0 - self._boundsErr
-                and p[0] <= self.magC + self._boundsErr
-                and p[1] >= 0 - self._boundsErr
+        return (p[0] >= 0 - self._boundsErr and p[0] <= self.magC + self._boundsErr and p[1] >= 0 - self._boundsErr
                 and p[1] <= self.magT + self._boundsErr)
 
 
@@ -155,8 +146,7 @@ class Graphene:
 
         self.cell = LatticeCell(self.lattice, m, n)
         self.atoms = [self.to3D(p) for p in self.cell.atoms]
-        self.bonds = [(self.to3D(b[0]), self.to3D(b[1]))
-                      for b in self.cell.bonds]
+        self.bonds = [(self.to3D(b[0]), self.to3D(b[1])) for b in self.cell.bonds]
         self.translation = (self.cell.magC, self.cell.magT, 0)
 
     def to3D(self, p):
@@ -181,9 +171,7 @@ class CNT:
         # Calculate atom and bond positions for wrapped CNT
         wrapFactor = wrapFactor * (self.dr / self.r)
         self.atoms = [self.wrap(p, wrapFactor) for p in self.cell.atoms]
-        self.bonds = [(self.wrap(b[0],
-                                 wrapFactor), self.wrap(b[1], wrapFactor))
-                      for b in self.cell.bonds]
+        self.bonds = [(self.wrap(b[0], wrapFactor), self.wrap(b[1], wrapFactor)) for b in self.cell.bonds]
 
         self.translation = (self.cell.magC, self.cell.magT, 0)
 
@@ -243,26 +231,27 @@ class BlenderCNTDialog(bpy.types.Operator):
     bl_label = "Create CNT"
     bl_options = {'REGISTER', 'UNDO'}
 
-    gtype: bpy.props.EnumProperty(name="Type",
-                                  items=(('CNT', "CNT", ""), ),
-                                  default='CNT')
+    gtype: bpy.props.EnumProperty(name="Type", items=(('CNT', "CNT", ""), ), default='CNT')
     wrap: bpy.props.FloatProperty(name="Wrap factor", default=0, min=0, max=1)
     index_m: bpy.props.IntProperty(name="m", default=5, min=1)
     index_n: bpy.props.IntProperty(name="n", default=5, min=0)
     count_x: bpy.props.IntProperty(name="Nx", default=1, min=1)
     count_y: bpy.props.IntProperty(name="Ny", default=1, min=1)
-    bL: bpy.props.FloatProperty(name="C-C Bond Length",
-                                default=.246,
-                                step=.246)
+    bL: bpy.props.FloatProperty(name="C-C Bond Length", default=.246, step=.246)
     bR: bpy.props.FloatProperty(name="C-C Bond Radius", default=.01, step=1)
     aR: bpy.props.FloatProperty(name="C Atom Radius", default=.04, step=1)
 
     def execute(self, context):
         if self.gtype == 'CNT':
-            cnt = CNT(self.bL, self.index_m, self.index_n, self.wrap)
-            count = (self.count_x, self.count_y)
-            self.render(cnt.atoms, cnt.bonds, self.aR, self.bR,
-                        cnt.translation, count)
+            if self.index_m >= self.index_n:
+                cnt = CNT(self.bL, self.index_m, self.index_n, self.wrap)
+                count = (self.count_x, self.count_y)
+                self.render(cnt.atoms, cnt.bonds, self.aR, self.bR, cnt.translation, count)
+            else:
+                self.index_m = self.index_n
+                cnt = CNT(self.bL, self.index_m, self.index_n, self.wrap)
+                count = (self.count_x, self.count_y)
+                self.render(cnt.atoms, cnt.bonds, self.aR, self.bR, cnt.translation, count)
 
         return {'FINISHED'}
 
@@ -346,20 +335,14 @@ class BlenderCNTDialog(bpy.types.Operator):
                 bpy.ops.object.modifier_add(type='ARRAY')
                 bpy.context.active_object.modifiers['Array'].name = name
                 #inital the array modifier
-                bpy.context.active_object.modifiers[
-                    name].constant_offset_displace[0] = 0
-                bpy.context.active_object.modifiers[
-                    name].constant_offset_displace[1] = 0
-                bpy.context.active_object.modifiers[
-                    name].constant_offset_displace[2] = 0
+                bpy.context.active_object.modifiers[name].constant_offset_displace[0] = 0
+                bpy.context.active_object.modifiers[name].constant_offset_displace[1] = 0
+                bpy.context.active_object.modifiers[name].constant_offset_displace[2] = 0
 
                 bpy.context.active_object.modifiers[name].count = count[i]
-                bpy.context.active_object.modifiers[
-                    name].use_relative_offset = False
-                bpy.context.active_object.modifiers[
-                    name].use_constant_offset = True
-                bpy.context.active_object.modifiers[
-                    name].constant_offset_displace[i] = d
+                bpy.context.active_object.modifiers[name].use_relative_offset = False
+                bpy.context.active_object.modifiers[name].use_constant_offset = True
+                bpy.context.active_object.modifiers[name].constant_offset_displace[i] = d
 
 
 if __name__ == "__main__":
