@@ -1,3 +1,9 @@
+Updates:
+
+June 22, 2021:
+Update to Blender 3.0
+Fix some bugs
+
 blender-cnt
 ===============================
 
