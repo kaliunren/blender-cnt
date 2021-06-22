@@ -248,7 +248,7 @@ class BlenderCNTDialog(bpy.types.Operator):
                 count = (self.count_x, self.count_y)
                 self.render(cnt.atoms, cnt.bonds, self.aR, self.bR, cnt.translation, count)
             else:
-                self.index_m = self.index_n
+                self.index_n = self.index_m
                 cnt = CNT(self.bL, self.index_m, self.index_n, self.wrap)
                 count = (self.count_x, self.count_y)
                 self.render(cnt.atoms, cnt.bonds, self.aR, self.bR, cnt.translation, count)
